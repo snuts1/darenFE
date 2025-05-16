@@ -1,0 +1,32 @@
+{
+  "name": "svelte-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@carbon/charts": "^1.23.6",
+    "@carbon/charts-svelte": "^1.22.18",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "carbon-components": "^10.58.15",
+    "carbon-components-svelte": "^0.89.1",
+    "carbon-icons-svelte": "^13.3.0",
+    "svelte": "^4.0.0",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@carbon/charts": "^1.23.6",
+    "@carbon/charts-svelte": "^1.22.18",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "carbon-components": "^10.58.15",
+    "carbon-components-svelte": "^0.89.1",
+    "carbon-icons-svelte": "^13.3.0",
+    "sirv-cli": "^2.0.0",
+    "svelte-app": "file:",
+    "vite": "^5.0.0"
+  }
+}
