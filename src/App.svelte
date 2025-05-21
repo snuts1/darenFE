@@ -1,7 +1,6 @@
 <script>
 	import Menu from './Menu.svelte'
 	import Events from './Trips.svelte'
-
 	export let name;
 </script>
 <Menu />
@@ -10,10 +9,14 @@
 </main>
 <div>
 
-	<h2>TEST</h2>
-
 </div>
-<style>
+<style global lang="scss">
+	// Import Carbon Design System global styles
+	// This requires svelte-preprocess and sass to be configured
+	// in your svelte.config.js or bundler config.
+	@import "@carbon/charts-svelte/styles.css";
+
+	/* Your other global styles can go here */
 	main {
 		text-align: center;
 		padding: 1em;

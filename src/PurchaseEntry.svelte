@@ -1,15 +1,18 @@
 <script>
   let showModal = false;
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
 
   // Props passed from parent (Trips.svelte)
   export let tripId;
   export let participants = []; // Array of { id: number, name: string }
+  export let showTriggerButton = true;
   let selectedDebtorIds = []; // Array to store IDs of selected debtors
 
   let purchaser = '';
   let description = '';
   let cost = null; // Use null for number inputs to allow placeholder/empty state
-
+  let submitError = null; // State to hold submission errors
 
   function openModal() {
     showModal = true;
@@ -24,32 +27,58 @@
     selectedDebtorIds = [];
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     // Basic validation
     if (!purchaser || !description.trim() || cost === null || cost <= 0) {
         alert('Please fill in all fields with valid values.');
         return;
     }
-     // Derive comma-separated debtor names
-    const debtorNames = participants
-      .filter(p => selectedDebtorIds.includes(p.id))
-      .map(p => p.name);
-    const debtorsString = debtorNames.join(',');
-    console.log('Purchase Entry:', { purchaser, description, cost, selectedDebtorIds, debtorsString });
-    // In a future step, you'll replace console.log with an API call
-    // e.g., await fetch(`/api/v1/payback/trips/${tripID}/purchases`, { method: 'POST', ... })
-    closeModal();
-    // RE-FETCH PURCHASE LOG
+
+    const purchaseData = {
+      trip_id: tripId,
+      payer_participant_id: parseInt(purchaser, 10), // Convert string ID from select to integer
+      total_amount: Math.round(cost * 100), // Convert dollars/euros to cents (integer)
+      description: description.trim(),
+      // Use current date/time for purchase_date
+      purchase_date: new Date().toISOString(),
+      debtor_ids: selectedDebtorIds, // Array of integer IDs
+    };
+    console.log('Purchase Entry:', purchaseData);
+    try {
+        const response = await fetch(`/api/v1/payback/purchases`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(purchaseData),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
+            throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || errorBody.message}`);
+        }
+
+        // Assuming success, close modal and notify parent
+        closeModal();
+        dispatch('purchaseAdded'); // Notify parent component to re-fetch the log
+
+    } catch (error) {
+        console.error('Error creating purchase:', error);
+        submitError = `Failed to save purchase: ${error.message}`;
+    }
   }
+  export { openModal };
 </script>
 
 <!-- Button to trigger the modal. You can place this wherever needed. -->
-<button on:click={openModal}>Add New Purchase</button>
-
+{#if showTriggerButton}<button on:click={openModal}>Add New Purchase</button>{/if}
 {#if showModal}
   <div class="modal-backdrop" on:click={closeModal}>
     <div class="modal-content" on:click|stopPropagation>
       <h2>Add New Purchase</h2>
+      {#if submitError}
+        <p class="error-message">{submitError}</p>
+      {/if}
       <form on:submit|preventDefault={handleSubmit}>
         <div>
           <label for="purchaser">Purchaser:</label>
@@ -123,6 +152,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     min-width: 350px;
     max-width: 500px;
+    max-height: 90vh; overflow-y: auto;
   }
 
   .modal-content h2 {
